@@ -53,10 +53,12 @@ public class Jumper {
 
     public void squash(){
         this.height = HEIGHT/2;
-        this.jumpingSpeed *= 2;
+        this.jumpingSpeed = INITIAL_JUMPING_SPEED*2;
     }
 
     public void unsquash(){
         this.height = HEIGHT;
+        this.isJumping = true;
+        jump();
     }
 }
