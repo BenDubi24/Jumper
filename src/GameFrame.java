@@ -2,6 +2,7 @@ import javax.swing.*;
 
 public class GameFrame extends JFrame {
 
+    //The game's frame
     public GameFrame() {
         this.add(new GamePanel());
         this.setResizable(false);

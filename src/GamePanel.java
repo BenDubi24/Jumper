@@ -20,6 +20,7 @@ public class GamePanel extends JPanel implements ActionListener {
     private Timer timer;
     private boolean isLost;
     private int score = 0;
+    private int highScore = score;
 
     public GamePanel() {
         this.setPreferredSize(new Dimension(SCREEN_WIDTH, SCREEN_HEIGHT));
@@ -37,16 +38,8 @@ public class GamePanel extends JPanel implements ActionListener {
         }
 
         else{
-            timer.stop();
+            finishGame();
         }
-    }
-
-    public void startGame() {
-        this.timer = new Timer(TIME_DELAY, this);
-        this.timer.start();
-        setNewObstacle();
-        this.iterator = obstacles.iterator();
-        moveForward();
     }
 
     public void paintComponent(Graphics graphics) {
@@ -56,7 +49,13 @@ public class GamePanel extends JPanel implements ActionListener {
         paintScore(graphics);
     }
 
-    public void paintObstacles(Graphics graphics) {
+    private void startGame() {
+        this.timer = new Timer(TIME_DELAY, this);
+        this.timer.start();
+        setNewObstacle();
+    }
+
+    private void paintObstacles(Graphics graphics) {
         graphics.setColor(Color.darkGray);
         while (iterator.hasNext()) {
 
@@ -71,7 +70,7 @@ public class GamePanel extends JPanel implements ActionListener {
         }
     }
 
-    public void paintJumper(Graphics graphics) {
+    private void paintJumper(Graphics graphics) {
         if(jumper.isJumping){
             jumper.jump();
         }
@@ -80,29 +79,38 @@ public class GamePanel extends JPanel implements ActionListener {
         graphics.fillOval(jumper.X_AXIS_PLACEMENT, jumper.currentHeight - jumper.HEIGHT, jumper.WIDTH, jumper.HEIGHT);
     }
 
-    public void paintScore(Graphics graphics){
-        String scoreMessage;
+    public Integer placement(String message, FontMetrics metrics){
+        return (SCREEN_WIDTH - metrics.stringWidth(message))/2;
+    }
+
+    private void paintScore(Graphics graphics){
+        final String scoreMessage;
+        final FontMetrics metrics = getFontMetrics(graphics.getFont());
+        graphics.setColor(Color.blue);
+        graphics.setFont(new Font("F",Font.ITALIC,20));
+
         if(!isLost){
             scoreMessage = "Score:" + score;
         }
 
         else {
             scoreMessage = "Game over! Final score : " + score;
+            String highScoreMessage = " Highest score : " + highScore;
+            String replayMessage = "Press esc to replay";
+
+            graphics.drawString(highScoreMessage,placement(highScoreMessage, metrics), 75);
+            graphics.drawString(replayMessage,placement(replayMessage , metrics), 100);
         }
 
-        graphics.setColor(Color.blue);
-        graphics.setFont(new Font(scoreMessage,Font.ITALIC,20));
-        FontMetrics metrics = getFontMetrics(graphics.getFont());
-        graphics.drawString(scoreMessage,
-                (SCREEN_WIDTH - metrics.stringWidth(scoreMessage))/2, 50);
+        graphics.drawString(scoreMessage, placement(scoreMessage, metrics), 50);
     }
 
-    public void moveForward() {
+    private void moveForward() {
         setNewObstacle();
         checkCollisions();
     }
 
-    public void checkCollisions() {
+    private void checkCollisions() {
         if (!obstacles.isEmpty()) {
             Obstacle obs = obstacles.get(0);
 
@@ -113,7 +121,7 @@ public class GamePanel extends JPanel implements ActionListener {
         }
     }
 
-    public void setNewObstacle() {
+    private void setNewObstacle() {
         Random random = new Random();
         Obstacle obs = new Obstacle();
 
@@ -128,10 +136,18 @@ public class GamePanel extends JPanel implements ActionListener {
             }
         }
 
-        iterator = obstacles.iterator();
+        this.iterator = obstacles.iterator();
     }
 
-    public void restart(){
+    private void finishGame(){
+        timer.stop();
+
+        if(score > highScore){
+            highScore = score;
+        }
+    }
+
+    private void restart(){
         jumper = new Jumper();
         obstacles = new ArrayList<>();
         score = 0;

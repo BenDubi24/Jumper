@@ -16,17 +16,14 @@ public class Jumper {
         this.isJumping = false;
     }
 
-    public void addToCurrentHeight(double jump) {
-        this.currentHeight -= (int) jump;
-    }
-
     public void jump() {
         if (this.currentHeight > INITIAL_HEIGHT) {
             this.currentHeight = INITIAL_HEIGHT;
             isJumping = false;
             timeUnit = 0;
+
         } else {
-            addToCurrentHeight(INITIAL_JUMPING_SPEED + timeUnit * GRAVITY_ACCELERATION);
+            this.currentHeight -= (int)(INITIAL_JUMPING_SPEED + timeUnit * GRAVITY_ACCELERATION);
             timeUnit++;
         }
     }
