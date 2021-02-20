@@ -1,3 +1,5 @@
+package game_stuff;
+
 import javax.swing.*;
 
 public class GameFrame extends JFrame {
