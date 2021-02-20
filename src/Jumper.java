@@ -4,7 +4,7 @@ public class Jumper {
     final Integer WIDTH = 30;
     final Integer X_AXIS_PLACEMENT = 20;
     final Integer INITIAL_JUMPING_SPEED = 8;
-    final Double GRAVITY_ACCELERATION = -0.14;
+    final Double GRAVITY_ACCELERATION = -0.1;
     final Integer INITIAL_HEIGHT = GamePanel.GROUND_HEIGHT;
 
     Integer currentHeight;

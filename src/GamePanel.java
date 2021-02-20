@@ -12,15 +12,13 @@ public class GamePanel extends JPanel implements ActionListener {
 
     static final Integer SCREEN_WIDTH = 1000;
     static final Integer SCREEN_HEIGHT = 500;
-    static final Integer TIME_DELAY = 8;
+    static final Integer TIME_DELAY = 5;
     static final Integer GROUND_HEIGHT = 450;
-    //    private Integer[] xAxisCoordinate = new Integer[SCREEN_WIDTH];
     private Jumper jumper = new Jumper();
     private ArrayList<Obstacle> obstacles = new ArrayList<>();
     private Iterator<Obstacle> iterator;
     private Timer timer;
     private boolean isLost;
-    private int timeUnit = 0;
     private int score = 0;
 
     public GamePanel() {
@@ -39,7 +37,7 @@ public class GamePanel extends JPanel implements ActionListener {
         }
 
         else{
-            gameOver();
+            timer.stop();
         }
     }
 
@@ -89,7 +87,7 @@ public class GamePanel extends JPanel implements ActionListener {
         }
 
         else {
-            scoreMessage = "Game over! \nFinal score : " + score;
+            scoreMessage = "Game over! Final score : " + score;
         }
 
         graphics.setColor(Color.blue);
@@ -106,7 +104,10 @@ public class GamePanel extends JPanel implements ActionListener {
 
     public void checkCollisions() {
         if (!obstacles.isEmpty()) {
-            if ((jumper.currentHeight > GROUND_HEIGHT - obstacles.get(0).getHeight()) && obstacles.get(0).xAxis >= 20 && obstacles.get(0).xAxis <= 50) {
+            Obstacle obs = obstacles.get(0);
+
+            if ((jumper.currentHeight >= GROUND_HEIGHT - obs.getHeight()) &&
+                    (obs.xAxis <= jumper.X_AXIS_PLACEMENT + jumper.WIDTH)) {
                 isLost = true;
             }
         }
@@ -130,8 +131,12 @@ public class GamePanel extends JPanel implements ActionListener {
         iterator = obstacles.iterator();
     }
 
-    public void gameOver() {
-        timer.stop();
+    public void restart(){
+        jumper = new Jumper();
+        obstacles = new ArrayList<>();
+        score = 0;
+        isLost = false;
+        timer.restart();
     }
 
     private class MyKeyAdapter extends KeyAdapter {
@@ -139,6 +144,12 @@ public class GamePanel extends JPanel implements ActionListener {
         public void keyPressed(KeyEvent e) {
             if (e.getKeyCode() == KeyEvent.VK_UP && !jumper.isJumping) {
                 jumper.isJumping = true;
+            }
+
+            if(e.getKeyCode() == KeyEvent.VK_ESCAPE){
+                if(isLost){
+                    restart();
+                }
             }
         }
     }

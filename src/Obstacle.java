@@ -2,7 +2,7 @@ import java.util.Random;
 
 public class Obstacle {
 
-    final Integer MAX_OBSTACLE_WIDTH = 40;
+    final Integer MAX_OBSTACLE_WIDTH = 50;
     final Integer MAX_OBSTACLE_HEIGHT = 100;
     Integer xAxis;
 
@@ -11,8 +11,8 @@ public class Obstacle {
 
     public Obstacle() {
         Random random = new Random();
-        this.WIDTH = random.nextInt(MAX_OBSTACLE_WIDTH) + 10;
-        this.HEIGHT = random.nextInt(MAX_OBSTACLE_HEIGHT) + 20;
+        this.WIDTH = random.nextInt(MAX_OBSTACLE_WIDTH) + 20;
+        this.HEIGHT = random.nextInt(MAX_OBSTACLE_HEIGHT) + 30;
         this.xAxis = GamePanel.SCREEN_WIDTH;
     }
 
