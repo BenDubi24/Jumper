@@ -77,12 +77,12 @@ public class GamePanel extends JPanel implements ActionListener {
     }
 
     private void paintJumper(Graphics graphics) {
-        if(jumper.isJumping()){
+        if(jumper.isInTheAir()){
             jumper.jump();
         }
 
         graphics.setColor(Color.orange);
-        graphics.fillOval(Jumper.X_AXIS_PLACEMENT, jumper.getCurrentHeightRelativeToGround() - jumper.getBallHeight(), Jumper.WIDTH, jumper.getBallHeight());
+        graphics.fillOval(Jumper.X_AXIS_PLACEMENT, jumper.getCurrentHeightRelativeToGround() - jumper.getBallHeight(), jumper.getBallWidth(), jumper.getBallHeight());
     }
 
     public Integer placement(String message, FontMetrics metrics){
@@ -111,7 +111,7 @@ public class GamePanel extends JPanel implements ActionListener {
             ratio = 2.0;
             height = 75;
             scoreMessage = "Game over! Final score : " + score;
-            String replayMessage = "Press down to replay";
+            String replayMessage = "Press Ctrl to replay";
 
             graphics.drawString(replayMessage,placement(replayMessage , metrics), 100);
         }
@@ -130,7 +130,7 @@ public class GamePanel extends JPanel implements ActionListener {
             Block obs = obstacles.get(0);
 
             if ((jumper.getCurrentHeightRelativeToGround() >= GROUND_HEIGHT - obs.getHeight()) &&
-                    (obs.getxAxis() <= Jumper.X_AXIS_PLACEMENT + Jumper.WIDTH) &&
+                    (obs.getxAxis() <= Jumper.X_AXIS_PLACEMENT + jumper.getBallWidth()) &&
                     (obs.getxAxis() >= Jumper.X_AXIS_PLACEMENT)) {
                 isLost = true;
             }
@@ -174,24 +174,32 @@ public class GamePanel extends JPanel implements ActionListener {
     private class MyKeyAdapter extends KeyAdapter {
         @Override
         public void keyPressed(KeyEvent e) {
-            if (e.getKeyCode() == KeyEvent.VK_UP && !jumper.isJumping()) {
-                jumper.setJumping(true);
+            if (e.getKeyCode() == KeyEvent.VK_UP && !jumper.isInTheAir()) {
+                jumper.setJumping();
             }
 
             if(e.getKeyCode() == KeyEvent.VK_DOWN){
-                if(isLost){
-                    restart();
+                if(!jumper.isInTheAir()){
+                    jumper.squash();
                 }
 
-                else {
-                    jumper.squash();
+                else{
+                    jumper.fall();
+                }
+            }
+
+            if(e.getKeyCode() == KeyEvent.VK_CONTROL){
+                if(isLost){
+                    restart();
                 }
             }
         }
 
         @Override
         public void keyReleased(KeyEvent e){
-            jumper.unsquash();
+            if(jumper.isSquashed()){
+                jumper.unsquash();
+            }
         }
     }
 }
