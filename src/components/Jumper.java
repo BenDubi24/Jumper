@@ -17,7 +17,7 @@ public class Jumper {
     private Boolean isInTheAir;
     private Boolean isSquashed;
     private Integer jumpingSpeed = INITIAL_JUMPING_SPEED;
-    public Double gravityAcceleration = INITIAL_GRAVITY_ACCELERATION;
+    private Double gravityAcceleration = INITIAL_GRAVITY_ACCELERATION;
 
     public Jumper() {
         this.currentHeightRelativeToGround = INITIAL_HEIGHT_RELATIVE_TO_GROUND;

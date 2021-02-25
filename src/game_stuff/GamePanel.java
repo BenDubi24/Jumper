@@ -1,7 +1,7 @@
 package game_stuff;
 
-import components.Block;
 import components.Jumper;
+import components.ObstacleManager;
 
 import javax.swing.*;
 import java.awt.*;
@@ -9,9 +9,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Random;
 
 public class GamePanel extends JPanel implements ActionListener {
 
@@ -21,11 +18,10 @@ public class GamePanel extends JPanel implements ActionListener {
     public static final Integer GROUND_HEIGHT = 450;
 
     private Jumper jumper = new Jumper();
-    private ArrayList<Block> obstacles = new ArrayList<>();
-    private Iterator<Block> iterator;
     private Timer timer;
+    private ObstacleManager obstacleManager = new ObstacleManager();
     private boolean isLost;
-    private int score = 0;
+    private int score = obstacleManager.getScore();
     private int highScore = score;
 
     public GamePanel() {
@@ -41,43 +37,32 @@ public class GamePanel extends JPanel implements ActionListener {
         if (!isLost) {
             moveForward();
             repaint();
-        }
-
-        else{
+        } else {
             finishGame();
         }
     }
 
     public void paintComponent(Graphics graphics) {
         super.paintComponent(graphics);
-        paintObstacles(graphics);
         paintJumper(graphics);
         paintScore(graphics);
+        paintGround(graphics);
+        this.obstacleManager.maintainObstacles(graphics);
     }
 
     private void startGame() {
         this.timer = new Timer(TIME_DELAY, this);
         this.timer.start();
-        setNewObstacle();
+        this.obstacleManager.setNewObstacle();
     }
 
-    private void paintObstacles(Graphics graphics) {
-        graphics.setColor(Color.darkGray);
-        while (iterator.hasNext()) {
-
-            Block obstacle = iterator.next();
-            if (obstacle.getxAxis() <= -obstacle.getWidth()) {
-                iterator.remove();
-                score++;
-            }
-
-            obstacle.moveForward();
-            graphics.fillRect(obstacle.getxAxis(), GamePanel.GROUND_HEIGHT - obstacle.getHeight(), obstacle.getWidth(), obstacle.getHeight());
-        }
+    private void paintGround(Graphics graphics) {
+        graphics.setColor(Color.black);
+        graphics.fillRect(0, GROUND_HEIGHT, SCREEN_WIDTH, SCREEN_HEIGHT - GROUND_HEIGHT);
     }
 
     private void paintJumper(Graphics graphics) {
-        if(jumper.isInTheAir()){
+        if (jumper.isInTheAir()) {
             jumper.jump();
         }
 
@@ -85,15 +70,15 @@ public class GamePanel extends JPanel implements ActionListener {
         graphics.fillOval(Jumper.X_AXIS_PLACEMENT, jumper.getCurrentHeightRelativeToGround() - jumper.getBallHeight(), jumper.getBallWidth(), jumper.getBallHeight());
     }
 
-    public Integer placement(String message, FontMetrics metrics){
-        return placement(message,metrics,2.0);
+    public Integer placement(String message, FontMetrics metrics) {
+        return placement(message, metrics, 2.0);
     }
 
-    public Integer placement(String message, FontMetrics metrics, double ratio){
-        return (int)((SCREEN_WIDTH - metrics.stringWidth(message))/ratio);
+    public Integer placement(String message, FontMetrics metrics, double ratio) {
+        return (int) ((SCREEN_WIDTH - metrics.stringWidth(message)) / ratio);
     }
 
-    private void paintScore(Graphics graphics){
+    private void paintScore(Graphics graphics) {
         final String scoreMessage;
         final FontMetrics metrics = getFontMetrics(graphics.getFont());
         final String highScoreMessage = " Highest score : " + highScore;
@@ -101,72 +86,51 @@ public class GamePanel extends JPanel implements ActionListener {
         double ratio = 1.1;
         Integer height = 25;
         graphics.setColor(Color.blue);
-        graphics.setFont(new Font("F",Font.ITALIC,20));
+        graphics.setFont(new Font("F", Font.ITALIC, 20));
 
-        if(!isLost){
-            scoreMessage = "Score:" + score;
-        }
-
-        else {
+        if (!isLost) {
+            scoreMessage = "Score:" + obstacleManager.getScore();
+        } else {
             ratio = 2.0;
             height = 75;
-            scoreMessage = "Game over! Final score : " + score;
+            scoreMessage = "Game over! Final score : " + obstacleManager.getScore();
             String replayMessage = "Press Ctrl to replay";
 
-            graphics.drawString(replayMessage,placement(replayMessage , metrics), 100);
+            graphics.drawString(replayMessage, placement(replayMessage, metrics), 100);
         }
 
-        graphics.drawString(highScoreMessage,placement(highScoreMessage, metrics,ratio), height);
+        graphics.drawString(highScoreMessage, placement(highScoreMessage, metrics, ratio), height);
         graphics.drawString(scoreMessage, placement(scoreMessage, metrics), 50);
     }
 
     private void moveForward() {
-        setNewObstacle();
-        checkCollisions();
+        this.obstacleManager.setNewObstacle();
+        checkForCollisions();
     }
 
-    private void checkCollisions() {
-        if (!obstacles.isEmpty()) {
-            Block obs = obstacles.get(0);
-
-            if ((jumper.getCurrentHeightRelativeToGround() >= GROUND_HEIGHT - obs.getHeight()) &&
-                    (obs.getxAxis() <= Jumper.X_AXIS_PLACEMENT + jumper.getBallWidth()) &&
-                    (obs.getxAxis() >= Jumper.X_AXIS_PLACEMENT)) {
-                isLost = true;
+    private void checkForCollisions() {
+        Rectangle firstRect = this.obstacleManager.getFirstObstacle();
+        if (firstRect != null) {
+            if ((jumper.getCurrentHeightRelativeToGround() >= GROUND_HEIGHT - firstRect.height) &&
+                    (firstRect.x <= Jumper.X_AXIS_PLACEMENT + jumper.getBallWidth()) &&
+                    (firstRect.x >= Jumper.X_AXIS_PLACEMENT)) {
+                if (this.highScore < obstacleManager.getScore()) this.highScore = obstacleManager.getScore();
+                this.isLost = true;
             }
         }
     }
 
-    private void setNewObstacle() {
-        Random random = new Random();
-        Block obs = new Block();
-
-        if (random.nextInt(150) > 148) {
-            if (obstacles.isEmpty()) {
-                obstacles.add(obs);
-            } else {
-                Block lastCurrentObstacle = obstacles.get(obstacles.size() - 1);
-                if (lastCurrentObstacle.getxAxis() < (int) (SCREEN_WIDTH * 0.85)) {
-                    obstacles.add(obs);
-                }
-            }
-        }
-
-        this.iterator = obstacles.iterator();
-    }
-
-    private void finishGame(){
+    private void finishGame() {
         timer.stop();
 
-        if(score > highScore){
+        if (score > highScore) {
             highScore = score;
         }
     }
 
-    private void restart(){
+    private void restart() {
         jumper = new Jumper();
-        obstacles = new ArrayList<>();
-        score = 0;
+        obstacleManager.reset();
         isLost = false;
         timer.restart();
     }
@@ -178,26 +142,24 @@ public class GamePanel extends JPanel implements ActionListener {
                 jumper.setJumping();
             }
 
-            if(e.getKeyCode() == KeyEvent.VK_DOWN){
-                if(!jumper.isInTheAir()){
+            if (e.getKeyCode() == KeyEvent.VK_DOWN) {
+                if (!jumper.isInTheAir()) {
                     jumper.squash();
-                }
-
-                else{
+                } else {
                     jumper.fall();
                 }
             }
 
-            if(e.getKeyCode() == KeyEvent.VK_CONTROL){
-                if(isLost){
+            if (e.getKeyCode() == KeyEvent.VK_CONTROL) {
+                if (isLost) {
                     restart();
                 }
             }
         }
 
         @Override
-        public void keyReleased(KeyEvent e){
-            if(jumper.isSquashed()){
+        public void keyReleased(KeyEvent e) {
+            if (jumper.isSquashed()) {
                 jumper.unsquash();
             }
         }
