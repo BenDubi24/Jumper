@@ -17,24 +17,27 @@ public class GamePanel extends JPanel implements ActionListener {
     public static final Integer TIME_DELAY = 5;
     public static final Integer GROUND_HEIGHT = 450;
 
-    private Jumper jumper = new Jumper();
+    private Jumper jumper;
     private Timer timer;
-    private ObstacleManager obstacleManager = new ObstacleManager();
-    private boolean isLost;
-    private int score = obstacleManager.getScore();
+    private ObstacleManager obstacleManager;
+    private boolean isGameOver;
+    private int score;
     private int highScore = score;
 
     public GamePanel() {
         this.setPreferredSize(new Dimension(SCREEN_WIDTH, SCREEN_HEIGHT));
         this.setBackground(Color.white);
         this.setFocusable(true);
-        this.isLost = false;
         this.addKeyListener(new MyKeyAdapter());
+        this.isGameOver = false;
+        this.jumper = new Jumper();
+        this.obstacleManager = new ObstacleManager();
+        this.score = obstacleManager.getScore();
         startGame();
     }
 
     public void actionPerformed(ActionEvent e) {
-        if (!isLost) {
+        if (!isGameOver) {
             moveForward();
             repaint();
         } else {
@@ -63,11 +66,11 @@ public class GamePanel extends JPanel implements ActionListener {
 
     private void paintJumper(Graphics graphics) {
         if (jumper.isInTheAir()) {
-            jumper.jump();
+            jumper.keepJumping();
         }
 
         graphics.setColor(Color.orange);
-        graphics.fillOval(Jumper.X_AXIS_PLACEMENT, jumper.getCurrentHeightRelativeToGround() - jumper.getBallHeight(), jumper.getBallWidth(), jumper.getBallHeight());
+        graphics.fillOval(jumper.getX(), jumper.getY() - jumper.getHeight(), jumper.getWidth(), jumper.getHeight());
     }
 
     public Integer placement(String message, FontMetrics metrics) {
@@ -88,7 +91,7 @@ public class GamePanel extends JPanel implements ActionListener {
         graphics.setColor(Color.blue);
         graphics.setFont(new Font("F", Font.ITALIC, 20));
 
-        if (!isLost) {
+        if (!isGameOver) {
             scoreMessage = "Score:" + obstacleManager.getScore();
         } else {
             ratio = 2.0;
@@ -111,11 +114,11 @@ public class GamePanel extends JPanel implements ActionListener {
     private void checkForCollisions() {
         Rectangle firstRect = this.obstacleManager.getFirstObstacle();
         if (firstRect != null) {
-            if ((jumper.getCurrentHeightRelativeToGround() >= GROUND_HEIGHT - firstRect.height) &&
-                    (firstRect.x <= Jumper.X_AXIS_PLACEMENT + jumper.getBallWidth()) &&
-                    (firstRect.x >= Jumper.X_AXIS_PLACEMENT)) {
-                if (this.highScore < obstacleManager.getScore()) this.highScore = obstacleManager.getScore();
-                this.isLost = true;
+            if ((jumper.getY() >= GROUND_HEIGHT - firstRect.height) &&
+                    (firstRect.x <= jumper.getX() + jumper.getWidth()) &&
+                    (firstRect.x >= jumper.getX())) {
+                if (highScore < obstacleManager.getScore()) highScore = obstacleManager.getScore();
+                isGameOver = true;
             }
         }
     }
@@ -131,7 +134,7 @@ public class GamePanel extends JPanel implements ActionListener {
     private void restart() {
         jumper = new Jumper();
         obstacleManager.reset();
-        isLost = false;
+        isGameOver = false;
         timer.restart();
     }
 
@@ -139,7 +142,7 @@ public class GamePanel extends JPanel implements ActionListener {
         @Override
         public void keyPressed(KeyEvent e) {
             if (e.getKeyCode() == KeyEvent.VK_UP && !jumper.isInTheAir()) {
-                jumper.setJumping();
+                jumper.setIsInTheAirTrue();
             }
 
             if (e.getKeyCode() == KeyEvent.VK_DOWN) {
@@ -151,7 +154,7 @@ public class GamePanel extends JPanel implements ActionListener {
             }
 
             if (e.getKeyCode() == KeyEvent.VK_CONTROL) {
-                if (isLost) {
+                if (isGameOver) {
                     restart();
                 }
             }

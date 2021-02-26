@@ -4,35 +4,39 @@ import game_stuff.GamePanel;
 
 public class Jumper {
 
-    public static final Integer X_AXIS_PLACEMENT = 20;
-    private final Integer SELF_HEIGHT = 30;
-    private final Integer SELF_WIDTH = 30;
+    private final Integer X_VALUE = 20;
+    private final Integer INITIAL_Y_VALUE = GamePanel.GROUND_HEIGHT;
+    private final Integer DEFAULT_HEIGHT = 30;
+    private final Integer WIDTH = 30;
     private final Integer INITIAL_JUMPING_SPEED = 8;
     private final Double INITIAL_GRAVITY_ACCELERATION = -0.12;
-    private final Integer INITIAL_HEIGHT_RELATIVE_TO_GROUND = GamePanel.GROUND_HEIGHT;
 
-    private Integer selfHeight = SELF_HEIGHT;
-    private Integer currentHeightRelativeToGround;
-    private Integer timeUnit = 0;
+    private Integer height;
+    private Integer y;
+    private Integer timeSpentInTheAir;
+    private Integer jumpingSpeed;
+    private Double gravityAcceleration;
     private Boolean isInTheAir;
     private Boolean isSquashed;
-    private Integer jumpingSpeed = INITIAL_JUMPING_SPEED;
-    private Double gravityAcceleration = INITIAL_GRAVITY_ACCELERATION;
 
     public Jumper() {
-        this.currentHeightRelativeToGround = INITIAL_HEIGHT_RELATIVE_TO_GROUND;
+        this.height = DEFAULT_HEIGHT;
+        this.y = INITIAL_Y_VALUE;
+        this.timeSpentInTheAir = 0;
+        this.jumpingSpeed = INITIAL_JUMPING_SPEED;
+        this.gravityAcceleration = INITIAL_GRAVITY_ACCELERATION;
         this.isInTheAir = false;
         this.isSquashed = false;
     }
 
-    public void jump() {
-        if (this.currentHeightRelativeToGround > INITIAL_HEIGHT_RELATIVE_TO_GROUND) {
+    public void keepJumping() {
+        if (this.y > INITIAL_Y_VALUE) {
             land();
         }
 
         else {
-            this.currentHeightRelativeToGround -= (int)(jumpingSpeed + timeUnit * INITIAL_GRAVITY_ACCELERATION);
-            timeUnit++;
+            this.y -= (int)(jumpingSpeed + timeSpentInTheAir * INITIAL_GRAVITY_ACCELERATION);
+            timeSpentInTheAir++;
         }
     }
 
@@ -40,20 +44,24 @@ public class Jumper {
         return this.isInTheAir;
     }
 
-    public void setJumping(){
+    public void setIsInTheAirTrue(){
         this.isInTheAir = true;
     }
 
-    public Integer getCurrentHeightRelativeToGround(){
-        return this.currentHeightRelativeToGround;
+    public Integer getX(){
+        return X_VALUE;
     }
 
-    public Integer getBallHeight(){
-        return this.selfHeight;
+    public Integer getY(){
+        return this.y;
     }
 
-    public Integer getBallWidth(){
-        return SELF_WIDTH;
+    public Integer getHeight(){
+        return this.height;
+    }
+
+    public Integer getWidth(){
+        return WIDTH;
     }
 
     public void fall(){
@@ -64,25 +72,24 @@ public class Jumper {
     }
 
     public void land(){
-        this.currentHeightRelativeToGround = INITIAL_HEIGHT_RELATIVE_TO_GROUND;
-        this.selfHeight = SELF_HEIGHT;
+        this.y = INITIAL_Y_VALUE;
+        this.height = DEFAULT_HEIGHT;
         this.isInTheAir = false;
         this.jumpingSpeed = INITIAL_JUMPING_SPEED;
         this.gravityAcceleration = INITIAL_GRAVITY_ACCELERATION;
-        this.timeUnit = 0;
+        this.timeSpentInTheAir = 0;
     }
 
     public void squash(){
-        this.selfHeight = SELF_HEIGHT/2;
+        this.height = DEFAULT_HEIGHT/2;
         this.jumpingSpeed = (int)(INITIAL_JUMPING_SPEED*1.5);
         this.isSquashed = true;
     }
 
     public void unsquash(){
-        this.selfHeight = SELF_HEIGHT;
+        this.height = DEFAULT_HEIGHT;
         this.isInTheAir = true;
         this.isSquashed = false;
-        jump();
     }
 
     public Boolean isSquashed(){

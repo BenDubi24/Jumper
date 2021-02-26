@@ -24,7 +24,7 @@ public class ObstacleManager {
         while (iterator.hasNext()) {
             Rectangle obstacle = iterator.next();
             moveObstacle(obstacle);
-            graphics.fillRect(obstacle.getBounds().x, obstacle.getBounds().y, obstacle.getBounds().width, obstacle.getBounds().height);
+            graphics.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
         }
     }
 
